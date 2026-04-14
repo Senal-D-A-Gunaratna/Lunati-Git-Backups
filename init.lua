@@ -17,20 +17,18 @@ local function shell_exec(cmd)
 end
 
 -- Main Logic
-local function do_git_commit(is_manual)
+local function do_git_commit()
     if world_path == "" then return "Error: No world path" end
     
     -- 1. Remove stale locks
     ie.os.execute("rm -f " .. world_path .. "/.git/index.lock")
 
-    -- 2. SMART CHECK: See if anything actually changed
-    -- We add everything then check if the diff is quiet
-    local check_cmd = "cd " .. world_path .. " && git add . && git diff --cached --quiet"
-    local no_changes = ie.os.execute(check_cmd)
+    -- 2. SMART CHECK: Check for changes
+    -- Returns 0 (true in Lua) if NO changes found
+    local no_changes = ie.os.execute("cd " .. world_path .. " && git add . && git diff --cached --quiet")
 
     if no_changes then
-        local msg = "[auto_git_backup] No new changes detected. Skipping commit."
-        minetest.log("action", msg)
+        minetest.log("action", "[auto_git_backup] No new changes detected.")
         return "skipped"
     end
 
@@ -38,7 +36,7 @@ local function do_git_commit(is_manual)
     local count_raw = shell_exec("cd " .. world_path .. " && git rev-list --count HEAD 2>/dev/null || echo 0")
     local count = tonumber(count_raw) or 0
     
-    -- 4. The Command (PC-Safe with nice/ionice)
+    -- 4. Execute Commit
     local cmd = string.format(
         "cd %q && ( [ ! -d .git ] && git init && git add . && git commit -m '0' || true ); " ..
         "nice -n 19 ionice -c 3 git commit -m '%d' &",
@@ -54,7 +52,7 @@ minetest.register_globalstep(function(dtime)
     timer = timer + dtime
     if timer >= 900 then
         timer = 0
-        do_git_commit(false)
+        do_git_commit()
     end
 end)
 
@@ -71,9 +69,9 @@ minetest.register_chatcommand("git", {
         if subcommand == "help" or not subcommand then
             return true, "Commands: commit, log, revert <id>\nTarget: " .. world_path
         elseif subcommand == "commit" then
-            local result = do_git_commit(true)
+            local result = do_git_commit()
             if result == "skipped" then
-                return true, "No new changes detected. Backup skipped."
+                return true, "No new changes detected. Skipping backup."
             else
                 return true, "Snapshot created with ID: " .. result
             end
@@ -87,7 +85,7 @@ minetest.register_chatcommand("git", {
             local hash = shell_exec(string.format("cd %q && git log --all --grep='^%s$' --format='%%H' -n 1", world_path, id))
             if hash == "" then return false, "ID not found." end
             ie.os.execute(string.format("cd %q && git reset --hard %s", world_path, hash))
-            return true, "World reverted to ID " .. id .. ". RESTART NOW!"
+            return true, "Reverted to " .. id .. ". RESTART NOW!"
         end
     end,
 })
