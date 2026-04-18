@@ -19,16 +19,16 @@ local function do_git_commit()
     if world_path == "" then return end
     
     -- 1. Prep the environment
-    ie.os.execute("rm -f " .. world_path .. "/.git/index.lock")
+    ie.os.execute(string.format("rm -f %q/.git/index.lock", world_path))
     
     -- 2. Get current commit count
-    local count_raw = shell_exec("cd " .. world_path .. " && git rev-list --count HEAD 2>/dev/null || echo 0")
+    local count_raw = shell_exec(string.format("cd %q && git rev-list --count HEAD 2>/dev/null || echo 0", world_path))
     local count = tonumber(count_raw) or 0
     
     -- 3. Attempt the commit
     -- We use 'git commit' without --allow-empty. 
     -- If there are no changes, the exit code will be non-zero (false).
-    local cmd = "cd " .. world_path .. " && git add . && nice -n 19 ionice -c 3 git commit -m '" .. count .. "'"
+    local cmd = string.format("cd %q && git add . && nice -n 19 ionice -c 3 git commit -m %q", world_path, tostring(count))
     local success = ie.os.execute(cmd)
 
     if success then
@@ -65,7 +65,7 @@ minetest.register_chatcommand("git", {
                 return true, "Snapshot created with ID: " .. result
             end
         elseif subcommand == "log" then
-            local out = shell_exec("cd " .. world_path .. " && git log --format='%s | %ad' --date=relative -n 15")
+            local out = shell_exec(string.format("cd %q && git log --format='%%s | %%ad' --date=relative -n 15", world_path))
             return true, "Last 15:\n" .. (out ~= "" and out or "No history.")
         elseif subcommand == "revert" then
             local id = args[2]
