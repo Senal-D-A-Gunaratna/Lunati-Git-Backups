@@ -67,17 +67,16 @@ minetest.register_chatcommand("git", {
         elseif subcommand == "log" or subcommand == "-l" then
             local out = shell_exec(string.format("cd %q && git log --format='%%s | %%ad' --date=relative -n 15", world_path))
             return true, "Last 15:\n" .. (out ~= "" and out or "No history.")
-        elseif subcommand == "help" or subcommand == "-h" then
-            return true, "Available: /git [-c|commit], /git [-l|log], /git [-h|help], /git revert <id>"
-        elseif subcommand == "revert" then
+        elseif subcommand == "revert" or subcommand == "-r" then
             local id = args[2]
             if not id then return false, "Usage: /git revert <id>" end
             local hash = shell_exec(string.format("cd %q && git log --all --grep='^%s$' --format='%%H' -n 1", world_path, id))
             if hash == "" then return false, "ID not found." end
             ie.os.execute(string.format("cd %q && git reset --hard %s", world_path, hash))
-            return true, "World reverted to " .. id .. ". RESTART NOW!"
+            minetest.request_shutdown("World reverted to snapshot " .. id .. ". Returning to menu.", false)
+            return true, "Reverting to " .. id .. " and returning to menu..."
         else
-            return true, "Available: /git [-c|commit], /git [-l|log], /git [-h|help], /git revert <id>"
+            return true, "Available: /git [-c|commit], /git [-l|log], /git [-h|help], /git [-r|revert] <id>"
         end
     end,
 })
