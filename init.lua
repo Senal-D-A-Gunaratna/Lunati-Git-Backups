@@ -73,10 +73,15 @@ minetest.register_chatcommand("git", {
             local hash = shell_exec(string.format("cd %q && git log --all --grep='^%s$' --format='%%H' -n 1", world_path, id))
             if hash == "" then return false, "ID not found." end
             ie.os.execute(string.format("cd %q && git reset --hard %s", world_path, hash))
-            minetest.request_shutdown("World reverted to snapshot " .. id .. ". Returning to menu.", false)
-            return true, "Reverting to " .. id .. " and returning to menu..."
+            for _, player in ipairs(minetest.get_connected_players()) do
+                minetest.kick_player(player:get_player_name(), "World reverted to snapshot " .. id .. ". Returning to menu.")
+            end
+            minetest.after(0.5, function()
+                minetest.request_shutdown("Rollback complete", false)
+            end)
+            return true, "Reverting to " .. id .. "..."
         else
-            return true, "Available: /git [-c|commit], /git [-l|log], /git [-h|help], /git [-r|revert] <id>"
+            return true, "Available: /git [-c|commit], /git [-l|log], /git [-h|help], /git [-r|revert] id"
         end
     end,
 })
