@@ -6,27 +6,28 @@ end
 
 local world_path = minetest.get_worldpath()
 local timer = 0
+local pending_push = {}
 
 local function shell_exec(cmd)
     local f = ie.io.popen(cmd)
     if not f then return "" end
     local s = f:read("*a")
     f:close()
-    return s:gsub("^%s*(.-)%s*$", "%1") 
+    return s:gsub("^%s*(.-)%s*$", "%1")
 end
 
 local function do_git_commit()
     if world_path == "" then return end
-    
+
     -- 1. Prep the environment
     ie.os.execute(string.format("rm -f %q/.git/index.lock", world_path))
-    
+
     -- 2. Get current commit count
     local count_raw = shell_exec(string.format("cd %q && git rev-list --count HEAD 2>/dev/null || echo 0", world_path))
     local count = tonumber(count_raw) or 0
-    
+
     -- 3. Attempt the commit
-    -- We use 'git commit' without --allow-empty. 
+    -- We use 'git commit' without --allow-empty.
     -- If there are no changes, the exit code will be non-zero (false).
     local cmd = string.format("cd %q && git add . && nice -n 19 ionice -c 3 git commit -m %q", world_path, tostring(count))
     local success = ie.os.execute(cmd)
@@ -57,7 +58,24 @@ minetest.register_chatcommand("git", {
         for word in param:gmatch("%S+") do table.insert(args, word) end
         local subcommand = args[1]
 
-        if subcommand == "commit" or subcommand == "-c" then
+        if subcommand == "push" or subcommand == "-p" then
+            local success = ie.os.execute(string.format("cd %q && git push", world_path))
+            if success == true or success == 0 then
+                return true, "Push successful."
+            end
+            pending_push[name] = true
+            return true, "Push failed. Force push? (y/n) - Type '/git y' to confirm or '/git n' to cancel."
+        elseif subcommand == "y" and pending_push[name] then
+            pending_push[name] = nil
+            local success = ie.os.execute(string.format("cd %q && git push --force", world_path))
+            if success == true or success == 0 then
+                return true, "Force push successful."
+            end
+            return false, "Force push failed. Check server logs."
+        elseif subcommand == "n" and pending_push[name] then
+            pending_push[name] = nil
+            return true, "Force push cancelled."
+        elseif subcommand == "commit" or subcommand == "-c" then
             local result = do_git_commit()
             if result == "skipped" then
                 return true, "No new changes detected."
@@ -81,7 +99,7 @@ minetest.register_chatcommand("git", {
             end)
             return true, "Reverting to " .. id .. "..."
         else
-            return true, "Available: /git [-c|commit], /git [-l|log], /git [-h|help], /git [-r|revert] id"
+            return true, "Available: /git [-c|commit], /git [-p|push], /git [-l|log], /git [-r|revert] id"
         end
     end,
 })
