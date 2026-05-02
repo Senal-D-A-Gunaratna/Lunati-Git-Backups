@@ -57,5 +57,3 @@ When you issue a `/git revert` command:
 *   **Snapshot IDs**: This mod uses simple incrementing numbers (Git commit counts) as IDs to make them easier to type in-game than long hexadecimal hashes.
 *   **Storage**: Because it uses Git, only changes (deltas) are stored, making it far more disk-efficient than traditional `.zip` or `.tar` backups.
 *   **Repository Initialization**: On the first run, the mod will automatically run `git init` in your world folder if a repository isn't already present.
-
----
