@@ -6,7 +6,18 @@ end
 
 local world_path = minetest.get_worldpath()
 local timer = 0
-local pending_push = {}
+
+-- Check if git repo exists, if not, initialize it
+local function check_and_init_repo()
+    local test_cmd = string.format("cd %q && git rev-parse --is-inside-work-tree >/dev/null 2>&1", world_path)
+    local is_repo = ie.os.execute(test_cmd)
+    if is_repo ~= true and is_repo ~= 0 then
+        minetest.log("action", "[auto_git_backup] Git repository not found. Initializing...")
+        local init_cmd = string.format("cd %q && git init && git add . && git commit -m \"Initial commit\"", world_path)
+        ie.os.execute(init_cmd)
+    end
+end
+check_and_init_repo()
 
 local function shell_exec(cmd)
     local f = ie.io.popen(cmd)
@@ -41,6 +52,31 @@ local function do_git_commit()
     end
 end
 
+local function show_force_push_dialog(name)
+    local formspec = "size[6,3]" ..
+        "label[1,0.5;Push failed. Would you like to force push?]" ..
+        "button_exit[1,1.5;2,1;yes;Yes (Force)]" ..
+        "button_exit[3,1.5;2,1;no;No (Cancel)]"
+    minetest.show_formspec(name, "auto_git_backup:force_push", formspec)
+end
+
+minetest.register_on_player_receive_fields(function(player, formname, fields)
+    if formname ~= "auto_git_backup:force_push" then return end
+
+    local name = player:get_player_name()
+    if fields.yes then
+        minetest.chat_send_player(name, "Attempting force push...")
+        local success = ie.os.execute(string.format("cd %q && git push --force", world_path))
+        if success == true or success == 0 then
+            minetest.chat_send_player(name, "Force push successful.")
+        else
+            minetest.chat_send_player(name, "Force push failed. Check server logs.")
+        end
+    elseif fields.no then
+        minetest.chat_send_player(name, "Force push cancelled.")
+    end
+end)
+
 minetest.register_globalstep(function(dtime)
     timer = timer + dtime
     if timer >= 900 then
@@ -63,18 +99,8 @@ minetest.register_chatcommand("git", {
             if success == true or success == 0 then
                 return true, "Push successful."
             end
-            pending_push[name] = true
-            return true, "Push failed. Force push? (y/n) - Type '/git y' to confirm or '/git n' to cancel."
-        elseif subcommand == "y" and pending_push[name] then
-            pending_push[name] = nil
-            local success = ie.os.execute(string.format("cd %q && git push --force", world_path))
-            if success == true or success == 0 then
-                return true, "Force push successful."
-            end
-            return false, "Force push failed. Check server logs."
-        elseif subcommand == "n" and pending_push[name] then
-            pending_push[name] = nil
-            return true, "Force push cancelled."
+            show_force_push_dialog(name)
+            return true, "Push failed. Opening confirmation dialog..."
         elseif subcommand == "commit" or subcommand == "-c" then
             local result = do_git_commit()
             if result == "skipped" then
