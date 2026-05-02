@@ -6,6 +6,8 @@ end
 
 local world_path = minetest.get_worldpath()
 local timer = 0
+-- Get interval from minetest.conf (default to 15 minutes/900s)
+local backup_interval = tonumber(minetest.settings:get("auto_git_backup_interval")) or 900
 
 -- Check if git repo exists, if not, initialize it
 local function check_and_init_repo()
@@ -54,7 +56,7 @@ end
 
 minetest.register_globalstep(function(dtime)
     timer = timer + dtime
-    if timer >= 900 then
+    if timer >= backup_interval then
         timer = 0
         do_git_commit()
     end
