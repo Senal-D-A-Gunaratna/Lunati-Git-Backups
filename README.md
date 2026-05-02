@@ -59,4 +59,4 @@ When you issue a `/git revert` command:
 *   **Repository Initialization**: On the first run, the mod will automatically run `git init` in your world folder if a repository isn't already present.
 
 ---
-*Maintained as part of the Lunati-style tool suite for Minetest.*
+
