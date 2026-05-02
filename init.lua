@@ -39,10 +39,13 @@ local function do_git_commit()
     local count_raw = shell_exec(string.format("cd %q && git rev-list --count HEAD 2>/dev/null || echo 0", world_path))
     local count = tonumber(count_raw) or 0
 
+    local timestamp = ie.os.date("%Y-%m-%d %H:%M:%S")
+    local msg = string.format("Snapshot #%d [%s]", count, timestamp)
+
     -- 3. Attempt the commit
     -- We use 'git commit' without --allow-empty.
     -- If there are no changes, the exit code will be non-zero (false).
-    local cmd = string.format("cd %q && git add . && nice -n 19 ionice -c 3 git commit -m %q", world_path, tostring(count))
+    local cmd = string.format("cd %q && git add . && nice -n 19 ionice -c 3 git commit -m %q", world_path, msg)
     local success = ie.os.execute(cmd)
 
     if success then
@@ -84,7 +87,8 @@ minetest.register_chatcommand("git", {
         elseif subcommand == "revert" or subcommand == "-r" then
             local id = args[2]
             if not id then return false, "Usage: /git revert <id>" end
-            local hash = shell_exec(string.format("cd %q && git log --all --grep='^%s$' --format='%%H' -n 1", world_path, id))
+            -- Search for the snapshot ID at the start of the formatted commit message
+            local hash = shell_exec(string.format("cd %q && git log --all --grep='^Snapshot #%s ' --format='%%H' -n 1", world_path, id))
             if hash == "" then return false, "ID not found." end
             ie.os.execute(string.format("cd %q && git reset --hard %s", world_path, hash))
             for _, player in ipairs(minetest.get_connected_players()) do

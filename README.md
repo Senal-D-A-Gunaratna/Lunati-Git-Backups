@@ -39,11 +39,11 @@ auto_git_backup_interval = 900
 
 The mod provides a central `/git` command (requires `server` privileges):
 
-| Command            | Description                                                             |
-| :----------------- | :---------------------------------------------------------------------- |
-| `/git commit`      | Manually trigger a world snapshot.                                      |
-| `/git log`         | Display the last 15 snapshots with timestamps.                          |
-| `/git revert <id>` | Reverts the world to the specified snapshot ID and restarts the server. |
+| Command                           | Description                                                             |
+| :-------------------------------- | :---------------------------------------------------------------------- |
+| `/git commit` or `/git -c`     | Manually trigger a world snapshot.                                      |
+| `/git log` or `/git -l`        | Display the last 15 snapshots with timestamps.                          |
+| `/git revert <id>` or `/git -r`| Reverts the world to the specified snapshot ID and restarts the server. |
 
 ### How Reverting Works
 When you issue a `/git revert` command:
@@ -59,4 +59,3 @@ When you issue a `/git revert` command:
 *   **Repository Initialization**: On the first run, the mod will automatically run `git init` in your world folder if a repository isn't already present.
 
 ---
-
