@@ -52,31 +52,6 @@ local function do_git_commit()
     end
 end
 
-local function show_force_push_dialog(name)
-    local formspec = "size[6,3]" ..
-        "label[1,0.5;Push failed. Would you like to force push?]" ..
-        "button_exit[1,1.5;2,1;yes;Yes (Force)]" ..
-        "button_exit[3,1.5;2,1;no;No (Cancel)]"
-    minetest.show_formspec(name, "auto_git_backup:force_push", formspec)
-end
-
-minetest.register_on_player_receive_fields(function(player, formname, fields)
-    if formname ~= "auto_git_backup:force_push" then return end
-
-    local name = player:get_player_name()
-    if fields.yes then
-        minetest.chat_send_player(name, "Attempting force push...")
-        local success = ie.os.execute(string.format("cd %q && git push --force", world_path))
-        if success == true or success == 0 then
-            minetest.chat_send_player(name, "Force push successful.")
-        else
-            minetest.chat_send_player(name, "Force push failed. Check server logs.")
-        end
-    elseif fields.no then
-        minetest.chat_send_player(name, "Force push cancelled.")
-    end
-end)
-
 minetest.register_globalstep(function(dtime)
     timer = timer + dtime
     if timer >= 900 then
@@ -94,14 +69,7 @@ minetest.register_chatcommand("git", {
         for word in param:gmatch("%S+") do table.insert(args, word) end
         local subcommand = args[1]
 
-        if subcommand == "push" or subcommand == "-p" then
-            local success = ie.os.execute(string.format("cd %q && git push", world_path))
-            if success == true or success == 0 then
-                return true, "Push successful."
-            end
-            show_force_push_dialog(name)
-            return true, "Push failed. Opening confirmation dialog..."
-        elseif subcommand == "commit" or subcommand == "-c" then
+        if subcommand == "commit" or subcommand == "-c" then
             local result = do_git_commit()
             if result == "skipped" then
                 return true, "No new changes detected."
@@ -125,7 +93,7 @@ minetest.register_chatcommand("git", {
             end)
             return true, "Reverting to " .. id .. "..."
         else
-            return true, "Available: /git [-c|commit], /git [-p|push], /git [-l|log], /git [-r|revert] id"
+            return true, "Available: /git [-c|commit], /git [-l|log], /git [-r|revert] id"
         end
     end,
 })
