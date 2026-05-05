@@ -1,6 +1,12 @@
 # Lunati Git Backups
 
-### A high-performance, automated snapshot system using **git** version control for Luanti worlds. This mod leverages Git to provide lightweight, incremental backups of your world state with minimal impact on server performance.
+**IMPORTANT**
+**Linux Only**: This mod is specifically designed for Linux/Unix environments. It utilizes **nice** and **ionice** for process prioritization. Performance and compatibility on other operating systems (like Windows) are not supported.
+
+## Introduction
+
+
+### A high-performance, automated snapshot system using *git* version control for Luanti worlds. This mod leverages git to provide lightweight, incremental backups of your world state with minimal impact on server performance.
 
 ## Features
 
@@ -28,7 +34,7 @@ this will add the `lunati-git-backups` mod into your `.minetest/mods` directory.
 3. **Crucial**: Add the mod to your `secure.trusted_mods` list in `minetest.conf`:
 
 ```conf
-secure.trusted_mods = auto_git_backup
+secure.trusted_mods = lunati-git-backups
 ```
 ## Updating
 To get the latest features and bug fixes:
