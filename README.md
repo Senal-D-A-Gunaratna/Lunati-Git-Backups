@@ -66,7 +66,7 @@ The mod provides a central `/git` command (requires `server` privileges):
 
 ### How Reverting Works
 
-When you issue a 'git -r' or `/git revert` command:
+When you issue a `git -r` or `/git revert` command:
 
 1. The mod identifies the correct Git hash based on your ID.
 2. All connected players are kicked with a notification.
