@@ -20,11 +20,12 @@
 
 1. clone the repo to get the plugin
 ```bash
-git clone https://github.com/Senal-D-A-Gunaratna/lunati-git-backups.git ~/.minetest/mods/
+git clone https://github.com/Senal-D-A-Gunaratna/lunati-git-backups.git ~/.minetest/mods/lunati-git-backups
 ```
-2. the `lunati-git-backups` folder into your `.minetest/mods` directory.
-3. Enable the mod in your world configuration.
-4. **Crucial**: Add the mod to your `secure.trusted_mods` list in `minetest.conf`:
+this will add the `lunati-git-backups` mod into your `.minetest/mods` directory.
+
+2. Enable the mod in your world configuration.
+3. **Crucial**: Add the mod to your `secure.trusted_mods` list in `minetest.conf`:
 
 ```conf
 secure.trusted_mods = auto_git_backup
@@ -48,7 +49,7 @@ The mod provides a central `/git` command (requires `server` privileges):
 | :-------------------------------------| :---------------------------------------------------------------------- |
 | `/git -c` or `/git commit` or         | Manually trigger a world snapshot.                                      |
 | `/git -l` or `/git log` or            | Display the last 15 snapshots with timestamps.                          |
-1| `/git -r <id>` or `/git revert <id>`  | Reverts the world to the specified snapshot ID and restarts the server. |
+| `/git -r <id>` or `/git revert <id>`  | Reverts the world to the specified snapshot ID and restarts the server. |
 
 ### How Reverting Works
 
