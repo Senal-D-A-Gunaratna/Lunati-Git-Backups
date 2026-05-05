@@ -30,6 +30,13 @@ this will add the `lunati-git-backups` mod into your `.minetest/mods` directory.
 ```conf
 secure.trusted_mods = auto_git_backup
 ```
+## Updating
+To get the latest features and bug fixes:
+```bash
+cd ~/.minetest/mods/lunati-git-backups
+git fetch --all
+git reset --hard origin/main
+```
 
 ## Configuration
 
