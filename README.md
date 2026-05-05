@@ -24,7 +24,7 @@
 
 ## Installation
 
-1. clone the repo to get the plugin
+1. Clone the repository to get the mod:
 ```bash
 git clone https://github.com/Senal-D-A-Gunaratna/lunati-git-backups.git ~/.minetest/mods/lunati-git-backups
 ```
@@ -58,11 +58,11 @@ _(Value is in seconds. Default is 900 seconds / 15 minutes.)_
 
 The mod provides a central `/git` command (requires `server` privileges):
 
-| Command                               | Description                                                             |
-| :-------------------------------------| :---------------------------------------------------------------------- |
-| `/git -c` or `/git commit` or         | Manually trigger a world snapshot.                                      |
-| `/git -l` or `/git log` or            | Display the last 15 snapshots with timestamps.                          |
-| `/git -r <id>` or `/git revert <id>`  | Reverts the world to the specified snapshot ID and restarts the server. |
+| Command                              | Description                                                             |
+| :----------------------------------- | :---------------------------------------------------------------------- |
+| `/git -c` or `/git commit` or        | Manually trigger a world snapshot.                                      |
+| `/git -l` or `/git log` or           | Display the last 15 snapshots with timestamps.                          |
+| `/git -r <id>` or `/git revert <id>` | Reverts the world to the specified snapshot ID and restarts the server. |
 
 ### How Reverting Works
 
@@ -77,4 +77,8 @@ When you issue a `git -r` or `/git revert` command:
 
 - **Snapshot IDs**: This mod uses simple incrementing numbers (Git commit counts) as IDs to make them easier to type in-game than long hexadecimal hashes.
 - **Storage**: Because it uses Git, only changes (deltas) are stored, making it far more disk-efficient than traditional `.zip` or `.tar` backups.
+
+## License
+
+License: MIT
 - **Repository Initialization**: On the first run, the mod will automatically run `git init` in your world folder if a repository isn't already present.
