@@ -26,20 +26,20 @@
 
 1. Clone the repository to get the mod:
 ```bash
-git clone https://github.com/Senal-D-A-Gunaratna/lunati-git-backups.git ~/.minetest/mods/lunati-git-backups
+git clone https://github.com/Senal-D-A-Gunaratna/lunati_git_backups.git ~/.minetest/mods/lunati_git_backups
 ```
-this will add the `lunati-git-backups` mod into your `.minetest/mods` directory.
+this will add the `lunati_git_backups` mod into your `.minetest/mods` directory.
 
 2. Enable the mod in your world configuration.
 3. **Crucial**: Add the mod to your `secure.trusted_mods` list in `minetest.conf`:
 
 ```conf
-secure.trusted_mods = lunati-git-backups
+secure.trusted_mods = lunati_git_backups
 ```
 ## Updating
 To get the latest features and bug fixes:
 ```bash
-cd ~/.minetest/mods/lunati-git-backups
+cd ~/.minetest/mods/lunati_git_backups
 git fetch --all
 git reset --hard origin/main
 ```
