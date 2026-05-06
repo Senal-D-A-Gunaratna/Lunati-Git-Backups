@@ -32,11 +32,10 @@ git clone https://github.com/Senal-D-A-Gunaratna/luanti_git_backups.git ~/.minet
 
 2. Enable the mod in your world configuration.
 
-3. **Required**: Add the mod to `secure.trusted_mods` in `minetest.conf`:
-
-```conf
-secure.trusted_mods = luanti_git_backups
-```
+3. **Required**: Add this mod under `Trusted mods` using the Luanti Settings GUi
+- enable `Show advanced settings`
+- go to `Developer Options` $→$ `Trusted Mods`
+- add `luanti_git_backups` under `Trusted Mods`
 
 ## Updating
 
