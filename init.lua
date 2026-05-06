@@ -120,20 +120,32 @@ minetest.register_chatcommand("git", {
 
             if hash == "" then return false, "ID not found." end
 
-            -- 2. Execute a Hard Reset to that commit hash (this overwrites world data)
-            ie.os.execute(string.format("cd %q && git reset --hard %s", world_path, hash))
+            -- 2. Broadcast warning with 5-second countdown
+            minetest.chat_send_all("WARNING: World reverting to snapshot #" .. id .. " in 5 seconds!")
 
-            -- 3. Kick all players so they don't see a corrupted world or desync
-            for _, player in ipairs(minetest.get_connected_players()) do
-                minetest.kick_player(player:get_player_name(), "World reverted to snapshot " .. id .. ". Returning to menu.")
+            for i = 4, 1, -1 do
+                minetest.after(5 - i, function()
+                    minetest.chat_send_all("Reverting in " .. i .. "...")
+                end)
             end
 
-            -- 4. Safety Shutdown: The server must restart to reload the database/map
-            minetest.after(0.5, function()
-                minetest.request_shutdown("Rollback complete", false)
+            -- 3. After countdown: kick players, reset, then shutdown
+            minetest.after(5, function()
+                for _, player in ipairs(minetest.get_connected_players()) do
+                    minetest.kick_player(player:get_player_name(), "World reverted to snapshot #" .. id .. ". Returning to menu.")
+                end
+
+                -- 4. Execute a Hard Reset to that commit hash (this overwrites world data)
+                ie.os.execute(string.format("cd %q && git reset --hard %s", world_path, hash))
+
+                -- 5. Safety Shutdown: The server must restart to reload the database/map
+                minetest.after(0.5, function()
+                    minetest.request_shutdown("Rollback complete", false)
+                end)
             end)
 
-            return true, "Reverting to " .. id .. "..."
+            return true, "Reverting to snapshot #" .. id .. " in 5 seconds..."
+
         else
             return true, "Available: /git [-c|commit], /git [-l|log], /git [-r|revert] id"
         end
