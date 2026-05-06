@@ -1,9 +1,9 @@
 -- ============================================================
---  lunati_git_backups | init.lua
+--  luanti_git_backups | init.lua
 --  Automatically snapshots your Minetest world via Git.
 --
 --  SETUP (minetest.conf):
---    secure.trusted_mods = lunati_git_backups
+--    secure.trusted_mods = luanti_git_backups
 --    auto_git_backup_interval = 900   (seconds, default 15 min)
 -- ============================================================
 
@@ -14,7 +14,7 @@
 
 local ie = minetest.request_insecure_environment()
 if not ie then
-    minetest.log("error", "[lunati_git_backups] Mod not trusted! Add it to secure.trusted_mods in minetest.conf.")
+    minetest.log("error", "[luanti_git_backups] Mod not trusted! Add it to secure.trusted_mods in minetest.conf.")
     return
 end
 
@@ -23,15 +23,15 @@ end
 -- SECTION 2: NAMESPACE
 -- ============================================================
 
-lunati_git_backups = {}
-local M = lunati_git_backups
+luanti_git_backups = {}
+local M = luanti_git_backups
 
 
 -- ============================================================
 -- SECTION 3: CONFIGURATION
 -- ============================================================
 
-M.MOD_TAG          = "[lunati_git_backups]"
+M.MOD_TAG          = "[luanti_git_backups]"
 M.world_path       = minetest.get_worldpath()
 M.revert_countdown = 5
 
@@ -251,4 +251,4 @@ minetest.register_chatcommand("git", {
 -- SECTION 8: LOAD GUI
 -- ============================================================
 
-dofile(minetest.get_modpath("lunati_git_backups") .. "/gui.lua")
+dofile(minetest.get_modpath("luanti_git_backups") .. "/gui.lua")

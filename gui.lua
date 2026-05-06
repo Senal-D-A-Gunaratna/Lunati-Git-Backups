@@ -1,11 +1,11 @@
 -- ============================================================
---  lunati_git_backups | gui.lua
+--  luanti_git_backups | gui.lua
 --  Formspec GUI for managing Git snapshots.
 -- ============================================================
 
-local M              = lunati_git_backups
-local FORMNAME_MAIN  = "lunati_git_backups:main"
-local FORMNAME_CONF  = "lunati_git_backups:confirm"
+local M              = luanti_git_backups
+local FORMNAME_MAIN  = "luanti_git_backups:main"
+local FORMNAME_CONF  = "luanti_git_backups:confirm"
 
 local pending_revert = {}
 local selected_row   = {}

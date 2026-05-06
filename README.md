@@ -1,4 +1,4 @@
-# Lunati git backups
+# Luanti git backups
 
 > **Linux Only**: This mod is specifically designed for Linux/Unix environments. It utilizes `nice` and `ionice` for process prioritization. Windows is not supported.
 
@@ -27,7 +27,7 @@ A high-performance, automated snapshot system using *git* version control for Lu
 1. Clone the repository into your mods folder:
 
 ```bash
-git clone https://github.com/Senal-D-A-Gunaratna/lunati_git_backups.git ~/.minetest/mods/lunati_git_backups
+git clone https://github.com/Senal-D-A-Gunaratna/luanti_git_backups.git ~/.minetest/mods/luanti_git_backups
 ```
 
 2. Enable the mod in your world configuration.
@@ -35,13 +35,13 @@ git clone https://github.com/Senal-D-A-Gunaratna/lunati_git_backups.git ~/.minet
 3. **Required**: Add the mod to `secure.trusted_mods` in `minetest.conf`:
 
 ```conf
-secure.trusted_mods = lunati_git_backups
+secure.trusted_mods = luanti_git_backups
 ```
 
 ## Updating
 
 ```bash
-cd ~/.minetest/mods/lunati_git_backups
+cd ~/.minetest/mods/luanti_git_backups
 git fetch --all
 git reset --hard origin/main
 ```
@@ -62,12 +62,12 @@ All commands require `server` privileges.
 
 ### Chat Commands
 
-| Command | Alias | Description |
-| :--- | :--- | :--- |
-| `/git commit` | `-c` | Manually create a world snapshot. |
-| `/git log` | `-l` | Show the last 15 snapshots with hash, timestamp, and age. |
-| `/git revert <hash>` | `-r <hash>` | Revert the world to the specified snapshot hash and restart the server. |
-| `/git gui` | `-g` or `-gui` | Open the in-game snapshot GUI. |
+| Command              | Alias          | Description                                                             |
+| :------------------- | :------------- | :---------------------------------------------------------------------- |
+| `/git commit`        | `-c`           | Manually create a world snapshot.                                       |
+| `/git log`           | `-l`           | Show the last 15 snapshots with hash, timestamp, and age.               |
+| `/git revert <hash>` | `-r <hash>`    | Revert the world to the specified snapshot hash and restart the server. |
+| `/git gui`           | `-g` or `-gui` | Open the in-game snapshot GUI.                                          |
 
 ### In-Game GUI
 
