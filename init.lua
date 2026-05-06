@@ -4,7 +4,7 @@
 --
 --  SETUP (minetest.conf):
 --    secure.trusted_mods = luanti_git_backups
---    auto_git_backup_interval = 900   (seconds, default 15 min)
+--    luanti_git_backup_interval = 900   (seconds, default 15 min)
 -- ============================================================
 
 
@@ -36,7 +36,7 @@ M.world_path       = minetest.get_worldpath()
 M.revert_countdown = 5
 
 local backup_timer    = 0
-local backup_interval = tonumber(minetest.settings:get("auto_git_backup_interval")) or 900
+local backup_interval = tonumber(minetest.settings:get("luanti_git_backup_interval")) or 900
 
 
 -- ============================================================

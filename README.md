@@ -48,7 +48,7 @@ git reset --hard origin/main
 ## Configuration
 
 ```conf
-auto_git_backup_interval = 900
+luanti_git_backup_interval = 900
 ```
 
 Value is in seconds. Default is 900 seconds (15 minutes).
