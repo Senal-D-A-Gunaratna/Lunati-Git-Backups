@@ -75,22 +75,15 @@ git_init_if_needed()
 log("action", string.format("Loaded. Auto-backup every %d seconds.", backup_interval))
 
 -- Creates a new Git snapshot of the world.
--- Returns the snapshot number and short hash on success, or "skipped" if nothing changed.
+-- Returns the short hash and timestamp on success, or "skipped" if nothing changed.
 local function git_commit()
     if world_path == "" then return end
 
     -- Remove stale lock files that would block git add/commit.
     ie.os.execute(string.format("rm -f %q/.git/index.lock", world_path))
 
-    -- Use commit count as a human-readable Snapshot ID.
-    local count_raw = shell_exec(string.format(
-        "cd %q && git rev-list --count HEAD 2>/dev/null || echo 0",
-        world_path
-    ))
-    local count = tonumber(count_raw:match("%d+")) or 0
-
     local timestamp = ie.os.date("%Y-%m-%d %H:%M:%S")
-    local message   = string.format("Snapshot #%d [%s]", count, timestamp)
+    local message   = string.format("Backup [%s]", timestamp)
 
     -- nice/ionice keep the commit from causing lag spikes for players.
     local success = ie.os.execute(string.format(
@@ -99,35 +92,24 @@ local function git_commit()
     ))
 
     if success then
-        -- Grab the short hash of the commit we just made.
         local short_hash = shell_exec(string.format(
             "cd %q && git rev-parse --short HEAD",
             world_path
         ))
-        log("action", string.format("Snapshot created: #%d (%s)", count, short_hash))
-        return count, short_hash
+        log("action", string.format("Snapshot created: %s [%s]", short_hash, timestamp))
+        return short_hash, timestamp
     else
         log("action", "No changes detected — snapshot skipped.")
         return "skipped"
     end
 end
 
--- Resolves a user-supplied identifier to a full commit hash.
--- Accepts either a Snapshot ID (e.g. "42") or a short/full Git hash.
-local function git_find_hash(id)
-    -- Try matching "Snapshot #<id>" in commit messages first.
-    local hash = shell_exec(string.format(
-        "cd %q && git log --all --grep='^Snapshot #%s ' --format='%%H' -n 1",
-        world_path, id
+-- Resolves a short/full Git hash to a verified full commit hash.
+local function git_find_hash(hash)
+    return shell_exec(string.format(
+        "cd %q && git rev-parse --verify %q 2>/dev/null",
+        world_path, hash
     ))
-    -- Fall back to treating the input as a raw short/full hash.
-    if hash == "" then
-        hash = shell_exec(string.format(
-            "cd %q && git rev-parse --verify %q 2>/dev/null",
-            world_path, id
-        ))
-    end
-    return hash
 end
 
 -- Hard-resets the repo to a specific commit hash.
@@ -154,39 +136,45 @@ end)
 -- ============================================================
 
 local function cmd_commit()
-    local count, short_hash = git_commit()
-    if count == "skipped" then
+    local short_hash, timestamp = git_commit()
+    if short_hash == "skipped" then
         return true, "No new changes detected."
     end
-    return true, string.format("Snapshot created — ID: #%d  hash: %s", count, short_hash)
+    return true, string.format("Snapshot created — hash: %s  [%s]", short_hash, timestamp)
 end
 
 local function cmd_log()
-    -- %h = short hash, %s = subject, %ad = author date
+    -- %h = short hash, %ai = timestamp, %ar = relative date
     local out = shell_exec(string.format(
-        "cd %q && git log --format='%%s | %%h | %%ad' --date=relative -n 15",
+        "cd %q && git log --format='%%h | %%ai | %%ar' -n 15",
         world_path
     ))
     return true, "Last 15 snapshots:\n" .. (out ~= "" and out or "No history found.")
 end
 
 local function cmd_revert(args)
-    local id = args[2]
-    if not id then
-        return false, "Usage: /git revert <snapshot_id or hash>"
+    local input_hash = args[2]
+    if not input_hash then
+        return false, "Usage: /git revert <hash>"
     end
 
-    local hash = git_find_hash(id)
-    if hash == "" then
-        return false, "Snapshot '" .. id .. "' not found."
+    local full_hash = git_find_hash(input_hash)
+    if full_hash == "" then
+        return false, "Hash '" .. input_hash .. "' not found."
     end
 
-    local short_hash = hash:sub(1, 7)
+    local short_hash = full_hash:sub(1, 7)
+
+    -- Get the timestamp of the target commit to show players.
+    local commit_time = shell_exec(string.format(
+        "cd %q && git show -s --format='%%ai' %s",
+        world_path, full_hash
+    ))
 
     -- Warn all players and count down before kicking.
     broadcast(string.format(
-        "WARNING: Server reverting to snapshot #%s (%s) in %d seconds!",
-        id, short_hash, REVERT_COUNTDOWN
+        "WARNING: Server reverting to %s [%s] in %d seconds!",
+        short_hash, commit_time, REVERT_COUNTDOWN
     ))
 
     for i = REVERT_COUNTDOWN - 1, 1, -1 do
@@ -200,30 +188,30 @@ local function cmd_revert(args)
         for _, player in ipairs(minetest.get_connected_players()) do
             minetest.kick_player(
                 player:get_player_name(),
-                string.format("Server reverted to snapshot #%s (%s). Please reconnect.", id, short_hash)
+                string.format("Server reverted to %s [%s]. Please reconnect.", short_hash, commit_time)
             )
         end
 
-        git_reset_hard(hash)
+        git_reset_hard(full_hash)
 
         -- Short delay so kick packets flush before shutdown.
         minetest.after(0.5, function()
             minetest.request_shutdown(
-                string.format("Revert to snapshot #%s (%s) complete.", id, short_hash),
+                string.format("Revert to %s [%s] complete.", short_hash, commit_time),
                 false
             )
         end)
     end)
 
     return true, string.format(
-        "Revert scheduled — snapshot #%s (%s) restoring in %d seconds.",
-        id, short_hash, REVERT_COUNTDOWN
+        "Revert scheduled — restoring %s [%s] in %d seconds.",
+        short_hash, commit_time, REVERT_COUNTDOWN
     )
 end
 
 -- Register the /git command and route subcommands.
 minetest.register_chatcommand("git", {
-    params      = "<commit|log|revert> [id or hash]",
+    params      = "<commit|log|revert> [hash]",
     description = "Manage world Git snapshots",
     privs       = { server = true },
     func = function(name, param)
@@ -238,7 +226,7 @@ minetest.register_chatcommand("git", {
         elseif sub == "log"    or sub == "-l" then return cmd_log()
         elseif sub == "revert" or sub == "-r" then return cmd_revert(args)
         else
-            return true, "Subcommands: commit (-c) | log (-l) | revert (-r) <id or hash>"
+            return true, "Subcommands: commit (-c) | log (-l) | revert (-r) <hash>"
         end
     end,
 })
