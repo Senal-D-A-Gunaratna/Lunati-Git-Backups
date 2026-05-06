@@ -79,7 +79,7 @@ local function build_main_form(player, snapshots)
 
         string.format("box[0,%f;%f,0.05;#444466]", H - 2.1, W),
 
-        string.format("button[0.3,%f;3.2,0.8;btn_commit;  Commit Snapshot]",    btn_y),
+        string.format("button[0.3,%f;3.2,0.8;btn_commit;  Create Snapshot]",    btn_y),
         string.format("button[3.8,%f;3.2,0.8;btn_revert;  Revert to Selected]", btn_y),
         string.format("button[7.3,%f;3.2,0.8;btn_refresh;  Refresh]",           btn_y),
         string.format("button_exit[10.8,%f;2.8,0.8;btn_close;Close]",           btn_y),
