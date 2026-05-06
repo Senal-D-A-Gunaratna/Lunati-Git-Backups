@@ -83,10 +83,11 @@ local function git_commit()
     ie.os.execute(string.format("rm -f %q/.git/index.lock", world_path))
 
     -- Use commit count as a human-readable Snapshot ID.
-    local count = tonumber(shell_exec(string.format(
+    local count_raw = shell_exec(string.format(
         "cd %q && git rev-list --count HEAD 2>/dev/null || echo 0",
         world_path
-    ))) or 0
+    ))
+    local count = tonumber(count_raw:match("%d+")) or 0
 
     local timestamp = ie.os.date("%Y-%m-%d %H:%M:%S")
     local message   = string.format("Snapshot #%d [%s]", count, timestamp)
