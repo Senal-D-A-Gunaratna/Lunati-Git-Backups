@@ -34,7 +34,7 @@ git clone https://github.com/Senal-D-A-Gunaratna/luanti_git_backups.git ~/.minet
 
 3. **Required**: Add this mod under `Trusted mods` using the Luanti Settings GUi
 - enable `Show advanced settings`
-- go to `Developer Options` $→$ `Trusted Mods`
+- go to `Developer Options` → `Trusted Mods`
 - add `luanti_git_backups` under `Trusted Mods`
 
 ## Updating
