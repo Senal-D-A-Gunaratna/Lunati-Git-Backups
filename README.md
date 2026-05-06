@@ -48,9 +48,8 @@ git reset --hard origin/main
 ## Configuration
 
 Use the Luanti Settings GUi
-- under `mods` section `Luanti git backups`
-
-Value is in seconds. Default is 900 seconds (15 minutes).
+- go to the `mods` section `Luanti git backups`
+*Value is in seconds. Default is 900 seconds (15 minutes)*
 
 ---
 
