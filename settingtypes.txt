@@ -1,0 +1,2 @@
+# Time in seconds between automated Git snapshots (Default: 900s / 15m)
+luanti_git_backup_interval (Auto Backup Interval) int 900 60 3600
