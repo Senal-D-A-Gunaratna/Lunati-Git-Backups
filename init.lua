@@ -24,7 +24,7 @@ end
 -- ============================================================
 
 lunati_git_backups = {}
-local M = lunati_git_backups  -- shorthand for use within this file
+local M = lunati_git_backups
 
 
 -- ============================================================
@@ -43,7 +43,6 @@ local backup_interval = tonumber(minetest.settings:get("auto_git_backup_interval
 -- SECTION 4: UTILITIES
 -- ============================================================
 
--- Runs a shell command and returns its trimmed stdout.
 function M.shell_exec(cmd)
     local f = ie.io.popen(cmd)
     if not f then return "" end
@@ -65,7 +64,6 @@ end
 -- SECTION 5: GIT CORE
 -- ============================================================
 
--- Initialises a Git repo in the world folder if one does not exist.
 local function git_init_if_needed()
     local cmd     = string.format("cd %q && git rev-parse --is-inside-work-tree >/dev/null 2>&1", M.world_path)
     local is_repo = ie.os.execute(cmd)
@@ -81,8 +79,6 @@ end
 git_init_if_needed()
 log("action", string.format("Loaded. Auto-backup every %d seconds.", backup_interval))
 
--- Creates a new Git snapshot of the world.
--- Returns short_hash + timestamp on success, or "skipped".
 function M.do_commit()
     if M.world_path == "" then return "skipped" end
 
@@ -109,7 +105,6 @@ function M.do_commit()
     end
 end
 
--- Resolves a short/full hash to a verified full commit hash.
 local function git_find_hash(hash)
     return M.shell_exec(string.format(
         "cd %q && git rev-parse --verify %q 2>/dev/null",
@@ -117,12 +112,10 @@ local function git_find_hash(hash)
     ))
 end
 
--- Hard-resets the repo to a specific commit hash.
 local function git_reset_hard(hash)
     ie.os.execute(string.format("cd %q && git reset --hard %s", M.world_path, hash))
 end
 
--- Performs a full revert with countdown, kick, reset and shutdown.
 function M.do_revert(input_hash, commit_time, requester)
     local full_hash = git_find_hash(input_hash)
     if full_hash == "" then
@@ -218,7 +211,10 @@ local function cmd_revert(args)
         return false, "Hash '" .. input_hash .. "' not found."
     end
 
-    return true, string.format("Revert scheduled — restoring %s in %d seconds.", input_hash, M.revert_countdown)
+    return true, string.format(
+        "Revert scheduled — restoring %s in %d seconds.",
+        input_hash, M.revert_countdown
+    )
 end
 
 local function cmd_gui(player_name)
@@ -240,10 +236,10 @@ minetest.register_chatcommand("git", {
 
         local sub = args[1]
 
-        if     sub == "commit" or sub == "-c"                    then return cmd_commit()
-        elseif sub == "log"    or sub == "-l"                    then return cmd_log()
-        elseif sub == "revert" or sub == "-r"                    then return cmd_revert(args)
-        elseif sub == "gui"    or sub == "-g" or sub == "-gui"   then return cmd_gui(name)
+        if     sub == "commit" or sub == "-c"                  then return cmd_commit()
+        elseif sub == "log"    or sub == "-l"                  then return cmd_log()
+        elseif sub == "revert" or sub == "-r"                  then return cmd_revert(args)
+        elseif sub == "gui"    or sub == "-g" or sub == "-gui" then return cmd_gui(name)
         else
             return true, "Subcommands: commit (-c) | log (-l) | revert (-r) <hash> | gui (-g)"
         end

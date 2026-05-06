@@ -8,7 +8,9 @@ local FORMNAME_MAIN  = "lunati_git_backups:main"
 local FORMNAME_CONF  = "lunati_git_backups:confirm"
 
 -- Stores the selected snapshot per-player pending confirmation.
-local pending_revert = {}
+local pending_revert  = {}
+-- Stores the currently selected row per-player so btn_revert can read it.
+local selected_row    = {}
 
 
 -- ============================================================
@@ -47,12 +49,16 @@ local function build_main_form(player, snapshots)
     local list_h = H - 3.5
     local btn_y  = H - 1.9
 
-    local cells = {}
+    -- Build textlist entries: "hash  |  timestamp  |  age"
+    local entries = {}
     for _, s in ipairs(snapshots) do
-        table.insert(cells, minetest.formspec_escape(s.hash))
-        table.insert(cells, minetest.formspec_escape(s.timestamp))
-        table.insert(cells, minetest.formspec_escape(s.relative))
+        table.insert(entries, minetest.formspec_escape(
+            string.format("%-10s  |  %-25s  |  %s", s.hash, s.timestamp, s.relative)
+        ))
     end
+
+    -- Highlight the currently selected row if any.
+    local sel = selected_row[player:get_player_name()] or 1
 
     return table.concat({
         "formspec_version[4]",
@@ -70,19 +76,20 @@ local function build_main_form(player, snapshots)
         "label[10.2,1.0;Age]",
         string.format("box[0,1.2;%f,0.05;#444466]", W),
 
-        -- Snapshot table
+        -- Scrollable textlist (replaces table[])
+        -- textlist supports mouse wheel and arrow key scrolling natively.
         string.format(
-            "tablecolumns[text,width=3.2;text,width=6.1;text,width=4]" ..
-            "table[0.3,%f;%f,%f;snapshot_list;%s;1]",
+            "textlist[0.3,%f;%f,%f;snapshot_list;%s;%d;false]",
             list_y, W - 0.6, list_h,
-            table.concat(cells, ",")
+            table.concat(entries, ","),
+            sel
         ),
 
         -- Divider above buttons
         string.format("box[0,%f;%f,0.05;#444466]", H - 2.1, W),
 
         -- Action buttons
-        string.format("button[0.3,%f;3.2,0.8;btn_commit;  Commit Snapshot]",  btn_y),
+        string.format("button[0.3,%f;3.2,0.8;btn_commit;  Commit Snapshot]",    btn_y),
         string.format("button[3.8,%f;3.2,0.8;btn_revert;  Revert to Selected]", btn_y),
         string.format("button[7.3,%f;3.2,0.8;btn_refresh;  Refresh]",           btn_y),
         string.format("button_exit[10.8,%f;2.8,0.8;btn_close;Close]",           btn_y),
@@ -102,8 +109,8 @@ local function build_confirm_form(hash, timestamp)
         "label[0.3,1.3;Are you sure you want to revert to this snapshot?]",
         string.format("label[0.3,2.0;Hash:   %s]", minetest.formspec_escape(hash)),
         string.format("label[0.3,2.6;Time:   %s]", minetest.formspec_escape(timestamp)),
-        string.format("label[0.3,3.2;This will restart the server and roll back all]"),
-        string.format("label[0.3,3.65;world data to this point.]"),
+        "label[0.3,3.2;This will restart the server and roll back all]",
+        "label[0.3,3.65;world data to this point.]",
 
         string.format("button[0.5,%f;3.2,0.8;btn_confirm_yes;Yes, Revert]", H - 0.9),
         string.format("button[4.3,%f;3.2,0.8;btn_confirm_no;Cancel]",       H - 0.9),
@@ -112,12 +119,11 @@ end
 
 
 -- ============================================================
--- SHOW GUI  (exposed on namespace so init.lua can call it)
+-- SHOW GUI
 -- ============================================================
 
 function M.show_gui(player)
     local snapshots = get_snapshots(50)
-    -- Cache on player meta for row → snapshot lookup.
     player:get_meta():set_string("lgb_snapshots", minetest.serialize(snapshots))
     minetest.show_formspec(
         player:get_player_name(),
@@ -141,6 +147,15 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
     -- --------------------------------------------------------
     if formname == FORMNAME_MAIN then
 
+        -- Track row selection changes from the textlist.
+        -- textlist returns "CHG:<row>" when selection changes, "DCL:<row>" on double-click.
+        if fields.snapshot_list then
+            local event = minetest.explode_textlist_event(fields.snapshot_list)
+            if event.type == "CHG" or event.type == "DCL" then
+                selected_row[name] = event.index
+            end
+        end
+
         if fields.btn_refresh then
             M.show_gui(player)
             return
@@ -160,10 +175,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
         end
 
         if fields.btn_revert then
-            local selected_raw = fields.snapshot_list
-            local row = selected_raw and tonumber(
-                selected_raw:match("CHG:(%d+)") or selected_raw:match("(%d+)")
-            )
+            local row = selected_row[name]
             if not row then
                 minetest.chat_send_player(name, M.MOD_TAG .. " Please select a snapshot first.")
                 return
@@ -172,9 +184,10 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
             local snapshots = minetest.deserialize(
                 player:get_meta():get_string("lgb_snapshots")
             ) or {}
+
             local snap = snapshots[row]
             if not snap then
-                minetest.chat_send_player(name, M.MOD_TAG .. " Invalid selection.")
+                minetest.chat_send_player(name, M.MOD_TAG .. " Invalid selection — try refreshing.")
                 return
             end
 
@@ -184,7 +197,10 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
             return
         end
 
-        if fields.btn_close or fields.quit then return end
+        if fields.btn_close or fields.quit then
+            selected_row[name] = nil
+            return
+        end
     end
 
     -- --------------------------------------------------------
@@ -195,6 +211,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
         if fields.btn_confirm_yes then
             local snap = pending_revert[name]
             pending_revert[name] = nil
+            selected_row[name]   = nil
             if not snap then return end
             M.do_revert(snap.hash, snap.timestamp, name)
             return
