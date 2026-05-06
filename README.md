@@ -97,6 +97,6 @@ Whether triggered by command or GUI:
 
 ---
 
-## License
-
-MIT
+## Credits & Licensing
+- **Code**: Licensed under the [MIT License](LICENSE).
+- **Git Logo**: Original logo by Jason Long, licensed under [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
