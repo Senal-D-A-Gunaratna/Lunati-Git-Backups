@@ -98,23 +98,24 @@ local function build_confirm_form(hash, timestamp)
         string.format("box[0,0;%f,0.8;#16213e]", W),
         "label[0.4,0.5;Confirm Revert]",
 
-        -- Warning icon area
+        -- Top red divider
         string.format("box[0.4,1.0;%f,0.05;#aa3333]", W - 0.8),
 
         -- Question
         "label[0.4,1.4;Are you sure you want to revert to this snapshot?]",
 
-        -- Hash and time in styled boxes
+        -- Hash and time in styled box
         string.format("box[0.4,1.9;%f,1.6;#0d1b2a]", W - 0.8),
-        string.format("label[0.8,2.3;Hash:]"),
+        "label[0.8,2.3;Hash:]",
         string.format("label[2.5,2.3;%s]", minetest.formspec_escape(hash)),
-        string.format("label[0.8,2.9;Time:]"),
+        "label[0.8,2.9;Time:]",
         string.format("label[2.5,2.9;%s]", minetest.formspec_escape(timestamp)),
 
-        -- Warning text
+        -- Bottom red divider
         string.format("box[0.4,3.7;%f,0.05;#aa3333]", W - 0.8),
-        "label[0.4,4.1;This will restart the server and roll back ALL world]",
-        "label[0.4,4.7;data to this point. This action cannot be undone.]",
+
+        -- Single-line warning
+        "label[0.4,4.3;This will restart the server and roll back ALL world data to this point. This action cannot be undone.]",
 
         -- Buttons
         string.format("button[0.5,%f;4.0,0.9;btn_confirm_yes;  Yes, Revert]", H - 1.1),
