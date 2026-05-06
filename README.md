@@ -1,24 +1,24 @@
-# Lunati Git Backups
+# Lunati git backups
 
 > **Linux Only**: This mod is specifically designed for Linux/Unix environments. It utilizes `nice` and `ionice` for process prioritization. Windows is not supported.
 
 ## Introduction
 
-A high-performance, automated snapshot system using *Git* version control for Luanti worlds. This mod leverages Git to provide lightweight, incremental backups of your world state with minimal impact on server performance.
+A high-performance, automated snapshot system using *git* version control for Luanti worlds. This mod leverages git to provide lightweight, incremental backups of your world state with minimal impact on server performance.
 
 ## Features
 
 - **Automated Snapshots**: Periodically saves the world state (default: every 15 minutes).
 - **Low Impact**: Uses `nice` and `ionice` to ensure backup processes don't cause lag spikes for players.
-- **Git Hash Identification**: Every snapshot is identified by its unique Git hash, making rollbacks precise and tamper-proof.
+- **git Hash Identification**: Every snapshot is identified by its unique git hash, making rollbacks precise and tamper-proof.
 - **Easy Rollbacks**: Revert the entire world to any previous snapshot via chat command or the in-game GUI.
 - **In-Game GUI**: A graphical interface for browsing, committing, and reverting snapshots without typing commands.
 - **In-Game Log**: View snapshot history with hashes, timestamps, and relative ages without leaving the game.
-- **Safety First**: Automatic Git lock cleanup, countdown broadcast, player kick, and graceful shutdown during reverts.
+- **Safety First**: Automatic git lock cleanup, countdown broadcast, player kick, and graceful shutdown during reverts.
 
 ## Requirements
 
-1. **Git**: Must be installed on the host system.
+1. **git**: Must be installed on the host system.
 2. **Operating System**: Linux/Unix only (required for `nice` and `ionice`).
 3. **Permissions**: Requires an **insecure environment** to execute system commands.
 
@@ -86,15 +86,15 @@ Whether triggered by command or GUI:
 
 1. All players receive a warning broadcast with a 5-second countdown.
 2. All connected players are kicked with a notification.
-3. The world is hard-reset to the selected Git commit.
+3. The world is hard-reset to the selected git commit.
 4. The server shuts down automatically so the database reloads cleanly on next start.
 
 ---
 
 ## Technical Notes
 
-- **Snapshot Identity**: Snapshots are identified by their Git short hash (e.g. `a3f9c1d`). Both the chat command and GUI accept short hashes. This is more reliable than sequential numbers, which can shift after a revert.
-- **Storage Efficiency**: Git stores only deltas between snapshots, making it far more disk-efficient than `.zip` or `.tar` backups.
+- **Snapshot Identity**: Snapshots are identified by their git short hash (e.g. `a3f9c1d`). Both the chat command and GUI accept short hashes. This is more reliable than sequential numbers, which can shift after a revert.
+- **Storage Efficiency**: git stores only deltas between snapshots, making it far more disk-efficient than `.zip` or `.tar` backups.
 - **Auto Initialisation**: On first run the mod automatically runs `git init` in your world folder if no repository exists.
 - **Lock Cleanup**: Stale `.git/index.lock` files are automatically removed before each commit to prevent backup failures.
 
