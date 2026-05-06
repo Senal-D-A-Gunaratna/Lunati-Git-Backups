@@ -7,10 +7,8 @@ local M              = lunati_git_backups
 local FORMNAME_MAIN  = "lunati_git_backups:main"
 local FORMNAME_CONF  = "lunati_git_backups:confirm"
 
--- Stores the selected snapshot per-player pending confirmation.
-local pending_revert  = {}
--- Stores the currently selected row per-player so btn_revert can read it.
-local selected_row    = {}
+local pending_revert = {}
+local selected_row   = {}
 
 
 -- ============================================================
@@ -49,7 +47,6 @@ local function build_main_form(player, snapshots)
     local list_h = H - 3.5
     local btn_y  = H - 1.9
 
-    -- Build textlist entries: "hash  |  timestamp  |  age"
     local entries = {}
     for _, s in ipairs(snapshots) do
         table.insert(entries, minetest.formspec_escape(
@@ -57,7 +54,6 @@ local function build_main_form(player, snapshots)
         ))
     end
 
-    -- Highlight the currently selected row if any.
     local sel = selected_row[player:get_player_name()] or 1
 
     return table.concat({
@@ -65,19 +61,15 @@ local function build_main_form(player, snapshots)
         string.format("size[%f,%f]", W, H),
         "bgcolor[#1a1a2e;true]",
 
-        -- Title bar
         string.format("box[0,0;%f,0.7;#16213e]", W),
         string.format("label[0.3,0.4;%s  —  World Snapshots]",
             minetest.formspec_escape(M.MOD_TAG)),
 
-        -- Column headers
         "label[0.3,1.0;Hash]",
         "label[3.8,1.0;Timestamp]",
         "label[10.2,1.0;Age]",
         string.format("box[0,1.2;%f,0.05;#444466]", W),
 
-        -- Scrollable textlist (replaces table[])
-        -- textlist supports mouse wheel and arrow key scrolling natively.
         string.format(
             "textlist[0.3,%f;%f,%f;snapshot_list;%s;%d;false]",
             list_y, W - 0.6, list_h,
@@ -85,10 +77,8 @@ local function build_main_form(player, snapshots)
             sel
         ),
 
-        -- Divider above buttons
         string.format("box[0,%f;%f,0.05;#444466]", H - 2.1, W),
 
-        -- Action buttons
         string.format("button[0.3,%f;3.2,0.8;btn_commit;  Commit Snapshot]",    btn_y),
         string.format("button[3.8,%f;3.2,0.8;btn_revert;  Revert to Selected]", btn_y),
         string.format("button[7.3,%f;3.2,0.8;btn_refresh;  Refresh]",           btn_y),
@@ -97,23 +87,38 @@ local function build_main_form(player, snapshots)
 end
 
 local function build_confirm_form(hash, timestamp)
-    local W, H = 8, 4.5
+    local W, H = 10, 6.5
+
     return table.concat({
         "formspec_version[4]",
         string.format("size[%f,%f]", W, H),
         "bgcolor[#1a1a2e;true]",
 
-        string.format("box[0,0;%f,0.7;#16213e]", W),
-        "label[0.3,0.4;Confirm Revert]",
+        -- Title bar
+        string.format("box[0,0;%f,0.8;#16213e]", W),
+        "label[0.4,0.5;Confirm Revert]",
 
-        "label[0.3,1.3;Are you sure you want to revert to this snapshot?]",
-        string.format("label[0.3,2.0;Hash:   %s]", minetest.formspec_escape(hash)),
-        string.format("label[0.3,2.6;Time:   %s]", minetest.formspec_escape(timestamp)),
-        "label[0.3,3.2;This will restart the server and roll back all]",
-        "label[0.3,3.65;world data to this point.]",
+        -- Warning icon area
+        string.format("box[0.4,1.0;%f,0.05;#aa3333]", W - 0.8),
 
-        string.format("button[0.5,%f;3.2,0.8;btn_confirm_yes;Yes, Revert]", H - 0.9),
-        string.format("button[4.3,%f;3.2,0.8;btn_confirm_no;Cancel]",       H - 0.9),
+        -- Question
+        "label[0.4,1.4;Are you sure you want to revert to this snapshot?]",
+
+        -- Hash and time in styled boxes
+        string.format("box[0.4,1.9;%f,1.6;#0d1b2a]", W - 0.8),
+        string.format("label[0.8,2.3;Hash:]"),
+        string.format("label[2.5,2.3;%s]", minetest.formspec_escape(hash)),
+        string.format("label[0.8,2.9;Time:]"),
+        string.format("label[2.5,2.9;%s]", minetest.formspec_escape(timestamp)),
+
+        -- Warning text
+        string.format("box[0.4,3.7;%f,0.05;#aa3333]", W - 0.8),
+        "label[0.4,4.1;This will restart the server and roll back ALL world]",
+        "label[0.4,4.7;data to this point. This action cannot be undone.]",
+
+        -- Buttons
+        string.format("button[0.5,%f;4.0,0.9;btn_confirm_yes;  Yes, Revert]", H - 1.1),
+        string.format("button[5.5,%f;4.0,0.9;btn_confirm_no;  Cancel]",       H - 1.1),
     }, "")
 end
 
@@ -147,8 +152,6 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
     -- --------------------------------------------------------
     if formname == FORMNAME_MAIN then
 
-        -- Track row selection changes from the textlist.
-        -- textlist returns "CHG:<row>" when selection changes, "DCL:<row>" on double-click.
         if fields.snapshot_list then
             local event = minetest.explode_textlist_event(fields.snapshot_list)
             if event.type == "CHG" or event.type == "DCL" then
