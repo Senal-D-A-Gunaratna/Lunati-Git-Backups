@@ -64,7 +64,7 @@ All commands require `server` privileges.
 | `/git commit`        | `-c`           | Manually create a world snapshot.                                       |
 | `/git log`           | `-l`           | Show the last 15 snapshots with hash, timestamp, and age.               |
 | `/git revert <hash>` | `-r <hash>`    | Revert the world to the specified snapshot hash and restart the server. |
-| `/git gui`           | `-g` or `-gui` | Open the in-game snapshot GUI.                                          |
+| `/git gui`           | `-g`           | Open the in-game snapshot GUI.                                          |
 
 ### In-Game GUI
 
