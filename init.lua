@@ -217,7 +217,7 @@ local function cmd_revert(args)
     )
 end
 
-local function cmd_reset()
+function M.reset_repository()
     local cmd = string.format("cd %q && rm -rf .git && git init && git add . && git commit -m \"Reinitialized repository\"", M.world_path)
     ie.os.execute(cmd)
     return true, "Git repository has been reset and reinitialized."
@@ -246,7 +246,7 @@ minetest.register_chatcommand("git", {
         elseif sub == "log"    or sub == "-l"                  then return cmd_log()
         elseif sub == "revert" or sub == "-r"                  then return cmd_revert(args)
         elseif sub == "gui"    or sub == "-g" or sub == "-gui" then return cmd_gui(name)
-        elseif sub == "-rm"                                     then return cmd_reset()
+        elseif sub == "-rm"                                     then return M.reset_repository()
         else
             return true, "Subcommands: commit (-c) | log (-l) | revert (-r) <hash> | gui (-g) | reinitialize git repo (-rm)"
         end

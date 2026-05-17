@@ -82,7 +82,8 @@ local function build_main_form(player, snapshots)
         string.format("button[0.3,%f;3.2,0.8;btn_commit;  Create Snapshot]",    btn_y),
         string.format("button[3.8,%f;3.2,0.8;btn_revert;  Revert to Selected]", btn_y),
         string.format("button[7.3,%f;3.2,0.8;btn_refresh;  Refresh]",           btn_y),
-        string.format("button_exit[10.8,%f;2.8,0.8;btn_close;Close]",           btn_y),
+        string.format("button[10.8,%f;2.8,0.8;btn_reinit;  Reinit Repo]",       btn_y),
+        string.format("button_exit[10.8,%f;2.8,0.8;btn_close;Close]",           btn_y + 1.2),
     }, "")
 end
 
@@ -198,6 +199,13 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
             pending_revert[name] = snap
             minetest.show_formspec(name, FORMNAME_CONF,
                 build_confirm_form(snap.hash, snap.timestamp))
+            return
+        end
+
+        if fields.btn_reinit then
+            M.reset_repository()
+            minetest.chat_send_player(name, M.MOD_TAG .. " Repository reinitialized.")
+            M.show_gui(player)
             return
         end
 
