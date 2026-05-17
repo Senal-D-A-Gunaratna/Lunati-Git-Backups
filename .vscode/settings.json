@@ -1,7 +1,10 @@
 {
     "cSpell.words": [
+        "bgcolor",
         "chatcommand",
         "dtime",
+        "FORMNAME",
+        "Formspec",
         "globalstep",
         "initialising",
         "ionice",
@@ -9,6 +12,7 @@
         "minetest",
         "modpath",
         "privs",
+        "textlist",
         "worldpath"
     ],
     "Lua.diagnostics.globals": [
