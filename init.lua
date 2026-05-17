@@ -246,9 +246,9 @@ minetest.register_chatcommand("git", {
         elseif sub == "log"    or sub == "-l"                  then return cmd_log()
         elseif sub == "revert" or sub == "-r"                  then return cmd_revert(args)
         elseif sub == "gui"    or sub == "-g" or sub == "-gui" then return cmd_gui(name)
-        elseif sub == "rm"                                     then return cmd_reset()
+        elseif sub == "-rm"                                     then return cmd_reset()
         else
-            return true, "Subcommands: commit (-c) | log (-l) | revert (-r) <hash> | gui (-g) | rm"
+            return true, "Subcommands: commit (-c) | log (-l) | revert (-r) <hash> | gui (-g) | reinitialize git repo (-rm)"
         end
     end,
 })
