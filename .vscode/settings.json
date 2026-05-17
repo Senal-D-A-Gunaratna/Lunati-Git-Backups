@@ -1,0 +1,18 @@
+{
+    "cSpell.words": [
+        "chatcommand",
+        "dtime",
+        "globalstep",
+        "initialising",
+        "ionice",
+        "luanti",
+        "minetest",
+        "modpath",
+        "privs",
+        "worldpath"
+    ],
+    "Lua.diagnostics.globals": [
+        "luanti_git_backups",
+        "minetest"
+    ]
+}
