@@ -217,6 +217,12 @@ local function cmd_revert(args)
     )
 end
 
+local function cmd_reset()
+    local cmd = string.format("cd %q && rm -rf .git && git init && git add . && git commit -m \"Reinitialized repository\"", M.world_path)
+    ie.os.execute(cmd)
+    return true, "Git repository has been reset and reinitialized."
+end
+
 local function cmd_gui(player_name)
     local player = minetest.get_player_by_name(player_name)
     if not player then return false, "Player not found." end
@@ -225,7 +231,7 @@ local function cmd_gui(player_name)
 end
 
 minetest.register_chatcommand("git", {
-    params      = "<commit|log|revert|gui> [hash]",
+    params      = "<commit|log|revert|gui|rm> [hash]",
     description = "Manage world Git snapshots",
     privs       = { server = true },
     func = function(name, param)
@@ -240,8 +246,9 @@ minetest.register_chatcommand("git", {
         elseif sub == "log"    or sub == "-l"                  then return cmd_log()
         elseif sub == "revert" or sub == "-r"                  then return cmd_revert(args)
         elseif sub == "gui"    or sub == "-g" or sub == "-gui" then return cmd_gui(name)
+        elseif sub == "rm"                                     then return cmd_reset()
         else
-            return true, "Subcommands: commit (-c) | log (-l) | revert (-r) <hash> | gui (-g)"
+            return true, "Subcommands: commit (-c) | log (-l) | revert (-r) <hash> | gui (-g) | rm"
         end
     end,
 })
